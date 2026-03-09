@@ -1,0 +1,50 @@
+from fastapi import HTTPException
+from app.config import supabase
+from app.models import NoteCreate, NoteUpdate
+
+def create_note(note: NoteCreate, user_id: str, token: str):
+    try:
+        response = supabase.postgrest.auth(token).table("notes").insert({
+            "title": note.title,
+            "content": note.content,
+            "user_id": user_id
+        }).execute()
+        return {"message": "Note created successfully", 
+                "note": response.data[0]
+                }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def get_all_notes():
+    try:
+        response = supabase.table("notes").select("*").limit(10).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="No notes found")
+        return response.data
+    except Exception:
+        raise 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def get_user_notes(user_id: str):
+    try:
+        response = supabase.table("notes").select("*").eq("user_id", user_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="No notes found for this user")
+        return response.data
+    except Exception:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def update_note(note: NoteUpdate, token: str):
+    try:
+        response = supabase.postgrest.auth(token).table("notes").update({
+            "title": note.title,
+            "content": note.content
+        }).eq("id", note.id).execute()
+        return {"message": "Note updated successfully", 
+                "note": response.data[0]
+                }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -1,0 +1,64 @@
+{
+  "_comment": "=============================================================",
+  "_description": "SPIKE TEST — Simulates instantaneous, extreme traffic surge followed by rapid drop.",
+  "_goal": "Verify the system can survive a sudden 10x traffic burst and recover gracefully.",
+  "_industry_context": "Flash events (viral content, flash sales, ad campaigns) routinely cause 5-15x traffic spikes. Response degradation under spike must recover within seconds of load dropping.",
+  "_run": "k6 run --config spike_config.json script_test.js",
+  "=============================================================": "",
+
+  "scenarios": {
+    "spike_test": {
+      "executor": "ramping-vus",
+      "startVUs": 0,
+      "stages": [
+        { "duration": "1m",  "target": 20  },
+        { "duration": "30s", "target": 500 },
+        { "duration": "3m",  "target": 500 },
+        { "duration": "30s", "target": 20  },
+        { "duration": "3m",  "target": 20  },
+        { "duration": "30s", "target": 500 },
+        { "duration": "2m",  "target": 500 },
+        { "duration": "1m",  "target": 0   }
+      ],
+      "gracefulRampDown": "30s",
+      "env": {
+        "BASE_URL":  "http://localhost:8000",
+        "TEST_TYPE": "spike"
+      }
+    }
+  },
+
+  "thresholds": {
+    "http_req_duration": [
+      { "threshold": "p(95)<5000",  "abortOnFail": false },
+      { "threshold": "p(99)<10000", "abortOnFail": false }
+    ],
+    "http_req_failed": [
+      { "threshold": "rate<0.20", "abortOnFail": true, "delayAbortEval": "30s" }
+    ],
+    "custom_error_rate": [
+      { "threshold": "rate<0.20", "abortOnFail": false }
+    ],
+    "custom_login_duration_ms": [
+      { "threshold": "p(95)<5000", "abortOnFail": false }
+    ],
+    "custom_create_note_duration_ms": [
+      { "threshold": "p(95)<6000", "abortOnFail": false }
+    ],
+    "custom_get_all_notes_duration_ms": [
+      { "threshold": "p(95)<3000", "abortOnFail": false }
+    ]
+  },
+
+  "userAgent": "k6-spike-test/1.0",
+  "noConnectionReuse": true,
+  "discardResponseBodies": false,
+
+  "summaryTrendStats": ["med", "p(90)", "p(95)", "p(99)", "max"],
+
+  "tags": {
+    "test_type": "spike",
+    "environment": "local",
+    "version": "1.0.0"
+  }
+}

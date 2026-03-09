@@ -1,0 +1,65 @@
+{
+  "_comment": "=============================================================",
+  "_description": "STRESS TEST — Gradually pushes load far beyond normal peak to find system breaking point.",
+  "_goal": "Identify at what load level the system degrades (latency spikes, errors > SLA).",
+  "_industry_context": "Stress testing typically ramps to 2-5x normal peak. Normal peak ~50 VUs → target ~200 VUs.",
+  "_run": "k6 run --config stress_config.json script_test.js",
+  "=============================================================": "",
+
+  "scenarios": {
+    "stress_test": {
+      "executor": "ramping-vus",
+      "startVUs": 0,
+      "stages": [
+        { "duration": "2m",  "target": 50  },
+        { "duration": "3m",  "target": 100 },
+        { "duration": "3m",  "target": 100 },
+        { "duration": "3m",  "target": 150 },
+        { "duration": "3m",  "target": 150 },
+        { "duration": "3m",  "target": 200 },
+        { "duration": "5m",  "target": 200 },
+        { "duration": "3m",  "target": 100 },
+        { "duration": "2m",  "target": 0   }
+      ],
+      "gracefulRampDown": "60s",
+      "env": {
+        "BASE_URL":  "http://localhost:8000",
+        "TEST_TYPE": "stress"
+      }
+    }
+  },
+
+  "thresholds": {
+    "http_req_duration": [
+      { "threshold": "p(95)<3000", "abortOnFail": false },
+      { "threshold": "p(99)<5000", "abortOnFail": false }
+    ],
+    "http_req_failed": [
+      { "threshold": "rate<0.10", "abortOnFail": true, "delayAbortEval": "30s" }
+    ],
+    "custom_error_rate": [
+      { "threshold": "rate<0.10", "abortOnFail": false }
+    ],
+    "custom_login_duration_ms": [
+      { "threshold": "p(95)<3000", "abortOnFail": false }
+    ],
+    "custom_create_note_duration_ms": [
+      { "threshold": "p(95)<4000", "abortOnFail": false }
+    ],
+    "custom_get_all_notes_duration_ms": [
+      { "threshold": "p(95)<2000", "abortOnFail": false }
+    ]
+  },
+
+  "userAgent": "k6-stress-test/1.0",
+  "noConnectionReuse": false,
+  "discardResponseBodies": false,
+
+  "summaryTrendStats": ["med", "p(90)", "p(95)", "p(99)", "max"],
+
+  "tags": {
+    "test_type": "stress",
+    "environment": "local",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,72 @@
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+ENV/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Type stubs
+*.pyi
+
+# ─── Environment variables ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# k6 test results
+k6/results/
+*.csv
+*.json.gz
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Keep Dockerfile and docker-compose tracked; ignore override files
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ─── Kubernetes ──────────────────────────────────────────────────────────────
+# Keep manifests tracked; ignore generated/sensitive files
+kubeconfig
+*.kubeconfig
+*-secret.yaml
+*-secrets.yaml
+
+# ─── Supabase ────────────────────────────────────────────────────────────────
+supabase/.branches/
+supabase/.temp/
+supabase/config.toml
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+desktop.ini

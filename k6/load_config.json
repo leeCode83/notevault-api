@@ -1,0 +1,63 @@
+{
+  "_comment": "=============================================================",
+  "_description": "LOAD TEST — Simulates normal, expected production traffic.",
+  "_goal": "Verify that the system handles typical concurrent users within SLA thresholds.",
+  "_industry_context": "Industry baseline for a mid-size internal API: ~50 concurrent users, stable.",
+  "_run": "k6 run --config load_config.json script_test.js",
+  "=============================================================": "",
+
+  "scenarios": {
+    "load_test": {
+      "executor": "ramping-vus",
+      "startVUs": 0,
+      "stages": [
+        { "duration": "2m",  "target": 10  },
+        { "duration": "3m",  "target": 25  },
+        { "duration": "5m",  "target": 50  },
+        { "duration": "5m",  "target": 50  },
+        { "duration": "2m",  "target": 25  },
+        { "duration": "1m",  "target": 0   }
+      ],
+      "gracefulRampDown": "30s",
+      "env": {
+        "BASE_URL":  "http://localhost:8000",
+        "TEST_TYPE": "load"
+      }
+    }
+  },
+
+  "thresholds": {
+    "http_req_duration": [
+      { "threshold": "p(50)<500",  "abortOnFail": false },
+      { "threshold": "p(90)<1000", "abortOnFail": false },
+      { "threshold": "p(95)<2000", "abortOnFail": true,  "delayAbortEval": "10s" }
+    ],
+    "http_req_failed": [
+      { "threshold": "rate<0.01", "abortOnFail": true, "delayAbortEval": "10s" }
+    ],
+    "custom_error_rate": [
+      { "threshold": "rate<0.01", "abortOnFail": false }
+    ],
+    "custom_login_duration_ms": [
+      { "threshold": "p(95)<1500", "abortOnFail": false }
+    ],
+    "custom_create_note_duration_ms": [
+      { "threshold": "p(95)<2000", "abortOnFail": false }
+    ],
+    "custom_get_all_notes_duration_ms": [
+      { "threshold": "p(95)<800",  "abortOnFail": false }
+    ]
+  },
+
+  "userAgent": "k6-load-test/1.0",
+  "noConnectionReuse": false,
+  "discardResponseBodies": false,
+
+  "summaryTrendStats": ["med", "p(90)", "p(95)", "p(99)", "max"],
+
+  "tags": {
+    "test_type": "load",
+    "environment": "local",
+    "version": "1.0.0"
+  }
+}
