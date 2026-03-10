@@ -37,15 +37,23 @@ def get_user_notes(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def update_note(note: NoteUpdate, token: str):
+def update_note(note: NoteUpdate, note_id: str, token: str):
     try:
-        response = supabase.postgrest.auth(token).table("notes").update({
-            "title": note.title,
-            "content": note.content
-        }).eq("id", note.id).execute()
+        update_data = note.model_dump(exclude_unset=True)
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No update data provided")
+
+        response = supabase.postgrest.auth(token).table("notes").update(update_data).eq("id", note_id).execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Note not found or no changes made")
+
         return {"message": "Note updated successfully", 
                 "note": response.data[0]
                 }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
