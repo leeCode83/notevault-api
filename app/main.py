@@ -23,7 +23,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Note Vault API"}
+    return {"message": "Hello K8s"}
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(note.router, prefix="/note", tags=["note"])
