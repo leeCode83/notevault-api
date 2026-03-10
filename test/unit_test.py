@@ -99,7 +99,7 @@ def test_get_all_notes_success(mock_supabase):
     _, mock_note = mock_supabase
     mock_execute = MagicMock()
     mock_execute.execute.return_value = MagicMock(data=[{"id": 1, "title": "Test"}])
-    mock_note.table().select().limit.return_value = mock_execute
+    mock_note.table().select().range.return_value = mock_execute
     
     response = get_all_notes()
     assert len(response) == 1
@@ -109,7 +109,7 @@ def test_get_all_notes_not_found(mock_supabase):
     _, mock_note = mock_supabase
     mock_execute = MagicMock()
     mock_execute.execute.return_value = MagicMock(data=[])
-    mock_note.table().select().limit.return_value = mock_execute
+    mock_note.table().select().range.return_value = mock_execute
     
     with pytest.raises(HTTPException) as excinfo:
         get_all_notes()

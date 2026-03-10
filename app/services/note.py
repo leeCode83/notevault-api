@@ -15,9 +15,9 @@ def create_note(note: NoteCreate, user_id: str, token: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-def get_all_notes():
+def get_all_notes(limit: int = 20, offset: int = 0):
     try:
-        response = supabase.table("notes").select("*").limit(10).execute()
+        response = supabase.table("notes").select("*").range(offset, offset + limit - 1).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="No notes found")
         return response.data
@@ -48,3 +48,4 @@ def update_note(note: NoteUpdate, token: str):
                 }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
