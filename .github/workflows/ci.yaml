@@ -94,3 +94,25 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Manifest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          # Clone the config repo
+          git clone https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/leecode83/notevault-config.git
+          cd notevault-config
+          
+          # Get the short SHA (first 7 chars)
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          
+          # Update the image tag in dev deployment
+          # Match 'image: ghcr.io/leecode83/notevault-api' then any tag after ':'
+          sed -i "s|image: ghcr.io/leecode83/notevault-api:.*|image: ghcr.io/leecode83/notevault-api:sha-$SHORT_SHA|g" environments/dev/deployment.yaml
+          
+          git add .
+          git commit -m "chore: update dev image to sha-$SHORT_SHA [skip ci]"
+          git push
