@@ -52,6 +52,8 @@ def update_note(note: NoteUpdate, note_id: str, token: str):
         return {"message": "Note updated successfully", 
                 "note": response.data[0]
                 }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

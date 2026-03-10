@@ -374,8 +374,7 @@ class TestUpdateNote:
 
     def test_update_note_title_and_content(self, client, auth_headers, created_note_id):
         """Update title dan content → 200, data terupdate."""
-        res = client.patch("/note/update", json={
-            "id":      created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "title":   "Updated Integration Title",
             "content": "Updated content from the integration test run.",
         }, headers=auth_headers)
@@ -388,8 +387,7 @@ class TestUpdateNote:
 
     def test_update_note_content_only(self, client, auth_headers, created_note_id):
         """Update hanya content (title opsional) → 200."""
-        res = client.patch("/note/update", json={
-            "id":      created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "content": "Only content was updated this time around.",
         }, headers=auth_headers)
 
@@ -398,8 +396,7 @@ class TestUpdateNote:
 
     def test_update_note_without_token(self, client, created_note_id):
         """Tanpa header Authorization sama sekali → 401 (FastAPI OAuth2 dependency)."""
-        res = client.patch("/note/update", json={
-            "id":      created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "title":   "Should Not Update",
             "content": "No auth present in this request.",
         })
@@ -412,48 +409,43 @@ class TestUpdateNote:
         Token yang invalid akan ditolak di DB layer (400 dari Supabase),
         bukan di FastAPI dependency layer (401).
         """
-        res = client.patch("/note/update", json={
-            "id":      created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "title":   "Invalid Token Update",
             "content": "This should be rejected by the server.",
         }, headers={"Authorization": "Bearer invalid.jwt.token"})
         assert res.status_code in (400, 401)
 
-    def test_update_note_missing_id(self, client, auth_headers):
-        """Field id tidak ada → 422."""
-        res = client.patch("/note/update", json={
+    def test_update_note_missing_note_id_in_path(self, client, auth_headers):
+        """Path ID tidak lengkap → 404 (Route not found)."""
+        res = client.patch("/note/update/", json={
             "title":   "No ID Provided",
-            "content": "This should fail validation.",
+            "content": "This should fail because the URL is incomplete.",
         }, headers=auth_headers)
-        assert res.status_code == 422
+        assert res.status_code == 404
 
     def test_update_note_title_too_short(self, client, auth_headers, created_note_id):
         """Title kurang dari 5 karakter → 422."""
-        res = client.patch("/note/update", json={
-            "id":    created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "title": "Nah",
         }, headers=auth_headers)
         assert res.status_code == 422
 
     def test_update_note_content_too_short(self, client, auth_headers, created_note_id):
         """Content kurang dari 10 karakter → 422."""
-        res = client.patch("/note/update", json={
-            "id":      created_note_id,
+        res = client.patch(f"/note/update/{created_note_id}", json={
             "content": "Brief",
         }, headers=auth_headers)
         assert res.status_code == 422
 
-    def test_update_note_empty_body(self, client, auth_headers):
-        """Body kosong → 422."""
-        res = client.patch("/note/update", json={}, headers=auth_headers)
-        assert res.status_code == 422
+    def test_update_note_empty_body(self, client, auth_headers, created_note_id):
+        """Body kosong → 400 (Handled in service)."""
+        res = client.patch(f"/note/update/{created_note_id}", json={}, headers=auth_headers)
+        assert res.status_code == 400
 
     def test_update_nonexistent_note(self, client, auth_headers):
-        """Update note dengan ID yang tidak ada → kemungkinan 400 atau 200 dengan data kosong."""
-        res = client.patch("/note/update", json={
-            "id":      "00000000-0000-0000-0000-000000000000",
+        """Update note dengan ID yang tidak ada → 404."""
+        note_id = "00000000-0000-0000-0000-000000000000"
+        res = client.patch(f"/note/update/{note_id}", json={
             "content": "Trying to update a nonexistent note.",
         }, headers=auth_headers)
-        # Supabase update pada ID yang tidak ada biasanya return 200 dengan data kosong
-        # atau 400 tergantung implementasi
-        assert res.status_code in (200, 400)
+        assert res.status_code == 404
