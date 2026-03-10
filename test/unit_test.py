@@ -144,7 +144,7 @@ def test_update_note_success(mock_supabase):
     mock_note.postgrest.auth().table().update().eq.return_value = mock_execute
     
     note_update = NoteUpdate(id="1", title="Updated", content="Updated content")
-    response = update_note(note_update, "valid_token")
+    response = update_note(note_update, "1", "valid_token")
     
     assert response["message"] == "Note updated successfully"
     assert response["note"]["title"] == "Updated"
@@ -157,5 +157,5 @@ def test_update_note_failure(mock_supabase):
     
     note_update = NoteUpdate(id="1", title="Updated", content="Updated content")
     with pytest.raises(HTTPException) as excinfo:
-        update_note(note_update, "valid_token")
+        update_note(note_update, "1", "valid_token")
     assert excinfo.value.status_code == 400

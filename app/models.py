@@ -20,9 +20,8 @@ class NoteCreate(BaseModel):
     content: str = Field(..., min_length=10)
 
 class NoteUpdate(BaseModel):
-    id: str
-    title: Optional[str] = Field(None, min_length=5, exclude=True)
-    content: Optional[str] = Field(None, min_length=10, exclude=True)
+    title: Optional[str] = Field(None, min_length=5)
+    content: Optional[str] = Field(None, min_length=10)
 
 class NoteDelete(BaseModel):
     id: str

@@ -25,6 +25,6 @@ def get_all_notes(request: Request, limit: int = 20, offset: int = 0):
 def get_user_notes(request: Request, user_id: str, user = Depends(get_current_user)):
     return note_service.get_user_notes(user.id)
 
-@router.patch("/update")
-def update_note(note: NoteUpdate, token: str = Depends(oauth2_scheme)):
-    return note_service.update_note(note, token)
+@router.patch("/update/{note_id}")
+def update_note(note: NoteUpdate, note_id: str, token: str = Depends(oauth2_scheme)):
+    return note_service.update_note(note, note_id, token)
